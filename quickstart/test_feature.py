@@ -7,14 +7,10 @@ client = Client(insecure=True)
 try:
     # List all available features
     print("Available features:")
-    features = client.list_features()
-    for feature in features:
-        print(f"- {feature.name}:{feature.variant}")
-    
     # Try to get the specific feature
     print("\nTrying to access User.avg_transactions:quickstart")
     result = client.features(
-        [("User.avg_transactions", "quickstart")],
+        [("avg_transactions", "quickstart")],
         {"user": "C2421688"}
     )
     print(f"Result: {result}")
