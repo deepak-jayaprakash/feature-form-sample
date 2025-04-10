@@ -30,6 +30,13 @@ def average_user_transaction(tr):
         "as avg_transaction_amt from {{tr}} GROUP BY user_id"
     )
 
+@postgres.sql_transformation(inputs=[transactions])
+def sum_user_transaction(tr):
+    return (
+        "SELECT CustomerID as user_id, sum(TransactionAmount) "
+        "as sum_transaction_amt from {{tr}} GROUP BY user_id"
+    )
+
 
 @ff.entity
 class User:
@@ -37,14 +44,21 @@ class User:
         average_user_transaction[
             ["user_id", "avg_transaction_amt"]
         ],  # We can optional include the `timestamp_column` "timestamp" here
-        variant="quickstart",
+        variant="quickstart2",
         type=ff.Float32,
         inference_store=redis,
     )
-
+    sum_transactions = ff.Feature(
+        sum_user_transaction[
+            ["user_id", "sum_transaction_amt"]
+        ],  # We can optional include the `timestamp_column` "timestamp" here
+        variant="quickstart2",
+        type=ff.Float32,
+        inference_store=redis,
+    )
     fraudulent = ff.Label(
         transactions[["customerid", "isfraud"]], 
-        variant="quickstart", 
+        variant="quickstart2", 
         type=ff.Bool,
     )
 
@@ -53,8 +67,5 @@ ff.register_training_set(
     name="fraud_training",
     label=User.fraudulent,
     features=[User.avg_transactions],
-    variant="quickstart",
+    variant="quickstart2",
 )
-
-
-
